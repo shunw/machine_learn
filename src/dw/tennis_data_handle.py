@@ -21,9 +21,9 @@ cursor = db1.cursor()
 
 
 sql_commnd = '''
-    SELECT win_percent, tourney_date 
+    SELECT player_name, win_percent, tourney_date 
     FROM player_wl_tourney
-    WHERE lower(player_name) like '%raf%nad%' and tourney_date between '2017-01-01 00:00:00' and '2017-12-31 23:59:00' 
+    WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2017-01-01 00:00:00' and '2017-12-31 23:59:00' 
     ORDER BY tourney_date
     '''
 
@@ -45,6 +45,10 @@ loser_count = 'loser_count'
 win_percent = 'win_percent'
 
 db1.close()
-
-plt.scatter(df[tourney_date], df[win_percent])
+# print (df.head())
+fig, axes = plt.subplots(1, 1)
+axes.scatter(df.loc[df[player_name] == 'Rafael Nadal', tourney_date], df.loc[df[player_name] == 'Rafael Nadal', win_percent], c = 'navy')
+axes.scatter(df.loc[df[player_name] == 'Roger Federer', tourney_date], df.loc[df[player_name] == 'Roger Federer', win_percent], c = 'red')
 plt.savefig('pic_output.png')
+
+# print (df.loc[df[player_name] == 'Rafael Nadal', tourney_date])
