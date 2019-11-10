@@ -23,7 +23,8 @@ cursor = db1.cursor()
 sql_commnd = '''
     SELECT win_percent, tourney_date 
     FROM player_wl_tourney
-    WHERE lower(player_name) like '%raf%nad%'
+    WHERE lower(player_name) like '%raf%nad%' and tourney_date between '2017-01-01 00:00:00' and '2017-12-31 23:59:00' 
+    ORDER BY tourney_date
     '''
 
 df = pd.read_sql_query(sql = sql_commnd, con=db1)
@@ -45,5 +46,5 @@ win_percent = 'win_percent'
 
 db1.close()
 
-plt.hist(df[win_percent], bins = 20)
-plt.savefig('test.png')
+plt.scatter(df[tourney_date], df[win_percent])
+plt.savefig('pic_output.png')
