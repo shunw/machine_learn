@@ -26,17 +26,17 @@ cursor = db1.cursor()
 
 # # tables = cursor.fetchall() 
 
-# # get all the players attend which tourney
-# cursor.execute('''
-#     CREATE TABLE player_info
-#         SELECT DISTINCT
-#             winner_name as player_name, tourney_id, tourney_name, surface, draw_size, tourney_date
-#             FROM tennis
-#         UNION
-#             SELECT DISTINCT
-#             loser_name as player_name, tourney_id, tourney_name, surface, draw_size, tourney_date
-#             FROM tennis
-#     ''')
+# get all the players attend which tourney
+cursor.execute('''
+    CREATE TABLE player_info
+        SELECT DISTINCT
+            winner_name as player_name, tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, winner_hand as player_hand, winner_age as player_age, winner_ht as player_ht, winner_rank_points as player_rank_points
+            FROM tennis
+        UNION
+            SELECT DISTINCT
+            loser_name as player_name, tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, loser_hand as player_hand, loser_age as player_age, loser_ht as player_ht, loser_rank_points as player_rank_points
+            FROM tennis
+    ''')
  
 # # tables = cursor.fetchall() 
 
@@ -63,13 +63,14 @@ cursor = db1.cursor()
 # create the table, player and his win/ lose count in a tourney
 cursor.execute('''
 CREATE TABLE player_wl_tourney
-    SELECT player_name, add_final.tourney_id, tourney_name, surface, draw_size, tourney_date, 
+    SELECT player_name, add_final.tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, 
         CASE WHEN final_winner_name is NULL THEN 0
         ELSE 1 END as final_winner, 
     l.loser_count, w.winner_count, 
     CASE WHEN l.loser_count is NULL THEN 100
         WHEN w.winner_count is NULL THEN 0
-        ELSE w.winner_count / (w.winner_count + l.loser_count) * 100 END as win_percent
+        ELSE w.winner_count / (w.winner_count + l.loser_count) * 100 END as win_percent, 
+    player_hand, player_age, player_ht, player_rank_points
 
     FROM(
     SELECT p.*, f.final_winner_name 
@@ -98,16 +99,3 @@ CREATE TABLE player_wl_tourney
 # print (tables)
 db1.commit()
 db1.close()
-
-# list_title = ['item_id', 'tourney_id', 'tourney_name', 'surface', 'draw_size', 'tourney_level', 'tourney_date', 'match_id', 'winner_id', 'winner_seed', 'winner_entry', 'winner_name', 'winner_hand', 'winner_ht', 'winner_ioc', 'winner_age', 'winner_rank', 'winner_rank_points', 'loser_id', 'loser_seed', 'loser_entry', 'loser_name', 'loser_hand', 'loser_ht', 'loser_ioc', 'loser_age', 'loser_rank', 'loser_rank_points', 'score', 'best_of', 'round', 'minutes', 'w_ace', 'w_df', 'w_svpt', 'w_1stIn', 'w_1stWon', 'w_2ndWon', 'w_SvGms', 'w_bpSaved', 'w_bpFaced', 'l_ace', 'l_df', 'l_svpt', 'l_1stIn', 'l_1stWon', 'l_2ndWon', 'l_SvGms', 'l_bpSaved', 'l_bpFaced']
-
-# nonselected_title = ['tourney_name', 'surface', 'draw_size', 'tourney_level', 'tourney_date', 'winner_id', 'winner_seed', 'winner_entry', 'winner_hand', 'winner_ht', 'winner_ioc', 'winner_age', 'winner_rank', 'winner_rank_points', 'loser_id', 'loser_seed', 'loser_entry', 'loser_hand', 'loser_ht', 'loser_ioc', 'loser_age', 'loser_rank', 'loser_rank_points']
-
-# winner_name = 'winner_name'
-# tourney_name = 'tourney_name'
-# tourney_date = 'tourney_date'
-# tourney_id = 'tourney_id'
-# # final_w_list = [winner_name, tourney_name, tourney_id, tourney_date] # for the query [final winner for each tourney]
-# # player_name_list = ['player_name', tourney_id] # player list 
-# df = pd.DataFrame(tables, columns = ['player_name', 'win_count', 'loser_count', 'tourney_id', 'win_per'])  
-# print (df)
