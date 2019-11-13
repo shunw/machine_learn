@@ -33,7 +33,6 @@ df = pd.read_sql_query(sql = sql_commnd, con=db1)
 # tables = cursor.fetchall()
 # print (tables)
 
-
 winner_name = 'winner_name'
 tourney_name = 'tourney_name'
 tourney_date = 'tourney_date'
