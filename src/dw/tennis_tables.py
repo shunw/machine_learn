@@ -86,10 +86,19 @@ cursor = db1.cursor()
 #     ''')
 
 
+
 # create the table, player and his win/ lose count in a tourney
 cursor.execute('''
 CREATE TABLE player_wl_tourney
-    SELECT player_name, add_final.tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, 
+    SELECT player_name, add_final.tourney_id, tourney_name, surface, draw_size, tourney_level, 
+    CASE WHEN tourney_level = 'C' THEN 1
+    WHEN tourney_level = 'A' THEN 2
+    WHEN tourney_level = 'M' THEN 3
+    WHEN tourney_level = 'G' THEN 4
+    WHEN tourney_level = 'F' THEN 5
+    ELSE NULL
+    END as level_weight,
+    tourney_date, 
         CASE WHEN final_winner_name is NULL THEN 0
         ELSE 1 END as final_winner, 
     r_t.round_total, w.winner_max_round, 
