@@ -26,7 +26,7 @@ cursor = db1.cursor()
 sql_commnd = '''
     SELECT *, win_percent * level_weight as wt_win_percent
     FROM player_wl_tourney
-    WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
+    WHERE tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
     ORDER BY player_name, tourney_date
     '''
 # WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
@@ -65,6 +65,7 @@ df.fillna(0, inplace=True)
 
 
 #================= ABOVE IS CONSTRUCT DATAFRAME =====================
+
 nes_col = list([win_percent, player_name, tourney_id, surface, draw_size, level_weight, player_hand, player_age, player_ht, player_rank_points, scaled_period_score])
 cat_cols = list([player_name, tourney_id, surface, player_hand])
 y_col = win_percent
@@ -72,19 +73,29 @@ y_col = win_percent
 # this is to convert all the category into float/ int
 df_short = df[nes_col]
 df_one_hot = pd.get_dummies(df_short, prefix = cat_cols)
-# print (df_one_hot.shape)
-X, y = df_one_hot.iloc[:, 1:].values, df_one_hot.iloc[:, 0].values
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .3, stratify = y, random_state = 0)
 
-sc = StandardScaler()
-X_train_std = sc.fit_transform(X_train)
-X_test_std = sc.transform(X_test)
+# X, y = df_one_hot.iloc[:, 1:].values, df_one_hot.iloc[:, 0].values
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .3, stratify = y, random_state = 0)
+
+# sc = StandardScaler()
+# X_train_std = sc.fit_transform(X_train)
+# X_test_std = sc.transform(X_test)
 
 #================= ABOVE IS SPLIT TRAIN/ TEST DATA =====================
-pair_cols = [scaled_period_score, win_percent, level_weight, player_hand, player_age]
-sns.pairplot(df_short[pair_cols], size = 2.5)
-plt.tight_layout()
-plt.savefig('pairplt.png')
+
+pair_cols = [scaled_period_score, player_age, player_ht]
+# sns.pairplot(df_short[pair_cols], size = 2.5)
+# plt.scatter(y = df_short[win_percent], x = df_short[player_hand])
+# plt.tight_layout()
+# plt.savefig('player_hand.png')
+# plt.savefig('pairplt.png')
+
+cm = np.corrcoef(df_short[pair_cols].values.T)
+# sns.set(font_scale = 1.5)
+hm = sns.heatmap(cm, cbar = True, annot = True, square = True, fmt = '.2f', annot_kws = {'size': 15}, yticklabels = pair_cols, xticklabels = pair_cols)
+# hm.set_ylim(0, 10)
+plt.savefig('heatmap.png', bbox_inches='tight')
+
 #================= ABOVE IS TO CHECK PAIRPLOT =====================
 
 # cov_mat = np.cov(X_train_std.T)
