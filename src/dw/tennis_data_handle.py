@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import seaborn as sns
 '''
 purpose: select query to get the main table and check the data
 '''
@@ -25,7 +26,7 @@ cursor = db1.cursor()
 sql_commnd = '''
     SELECT *, win_percent * level_weight as wt_win_percent
     FROM player_wl_tourney
-    WHERE (lower(player_name) like '%rog%fed%')
+    WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
     ORDER BY player_name, tourney_date
     '''
 # WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
@@ -69,7 +70,6 @@ cat_cols = list([player_name, tourney_id, surface, player_hand])
 y_col = win_percent
 
 # this is to convert all the category into float/ int
-
 df_short = df[nes_col]
 df_one_hot = pd.get_dummies(df_short, prefix = cat_cols)
 # print (df_one_hot.shape)
@@ -80,28 +80,35 @@ sc = StandardScaler()
 X_train_std = sc.fit_transform(X_train)
 X_test_std = sc.transform(X_test)
 
-cov_mat = np.cov(X_train_std.T)
-def check_symm(mat):
-    '''
-    check mat is symmetric
-    '''
-    m, n = mat.shape
-    for i in range(m):
-        for j in range(n):
-            if mat[i, j] != mat[j, i]: 
-                print ('not sym')
-                print ('the row is {}; the col is {}'.format(i, j))
-                break
-# check_symm(cov_mat)
+#================= ABOVE IS SPLIT TRAIN/ TEST DATA =====================
+pair_cols = [scaled_period_score, win_percent, level_weight, player_hand, player_age]
+sns.pairplot(df_short[pair_cols], size = 2.5)
+plt.tight_layout()
+plt.savefig('pairplt.png')
+#================= ABOVE IS TO CHECK PAIRPLOT =====================
 
-eigen_vals, eigen_vecs = np.linalg.eig(cov_mat)
+# cov_mat = np.cov(X_train_std.T)
+# def check_symm(mat):
+#     '''
+#     check mat is symmetric
+#     '''
+#     m, n = mat.shape
+#     for i in range(m):
+#         for j in range(n):
+#             if mat[i, j] != mat[j, i]: 
+#                 print ('not sym')
+#                 print ('the row is {}; the col is {}'.format(i, j))
+#                 break
+# # check_symm(cov_mat)
 
-# plot the eigen_vals scree plot
-tot = sum(eigen_vals)
-var_exp = list([(i/tot) for i in sorted(eigen_vals, reverse = True)])
-cum_var_exp = np.cumsum(var_exp)
-df_var_exp = pd.DataFrame({'var_exp':var_exp, 'cum_var':cum_var_exp})
-print (df_var_exp.head())
+# eigen_vals, eigen_vecs = np.linalg.eig(cov_mat)
+
+# # plot the eigen_vals scree plot
+# tot = sum(eigen_vals)
+# var_exp = list([(i/tot) for i in sorted(eigen_vals, reverse = True)])
+# cum_var_exp = np.cumsum(var_exp)
+# df_var_exp = pd.DataFrame({'var_exp':var_exp, 'cum_var':cum_var_exp})
+# print (df_var_exp.head())
 # plt.bar(range(1, 331), var_exp, alpha = .5, align = 'center', label = 'invidivual explained variance')
 # plt.step(range(1, 331), cum_var_exp, where = 'mid', label = 'cumulative explained variace')
 # plt.ylabel('Explained variace ratio')
@@ -109,7 +116,7 @@ print (df_var_exp.head())
 # plt.legend(loc = 'best')
 # plt.savefig('tennis_pca.png')
 
-#================= ABOVE IS PREPARE DATA =====================
+#================= ABOVE IS PCA PART =====================
 
 # # this is to make the scatter plot to check the relationship
 # fig, axes = plt.subplots(1, 1)
