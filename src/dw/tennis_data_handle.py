@@ -22,15 +22,38 @@ db1 = mysql.connect(host = sqlhost, user = sqluser, passwd = sqlpwd, db = 'tenni
 
 cursor = db1.cursor()
 
+sql_commnd = '''
+    SELECT winner_name as player_name, loser_name as opponent_name, 1 as w_or_l,tourney_date, tourney_id, tourney_name, w_1stIn/w_svpt as 1in_sp, w_1stWon/w_1stIn as 1w_sp, w_2ndWon/(w_svpt - w_df - w_1stIn) as 2w_sp, (l_1stIn - l_1stWon)/l_1stIn as 1w_rp, (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) as 2w_rp, (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
+    FROM tennis
+    WHERE winner_name like '%rog%fed%'
+
+    UNION
+
+    SELECT loser_name as player_name, winner_name as opponent_name, 0 as w_or_l, tourney_date, tourney_id, tourney_name, l_1stIn/l_svpt as 1in_sp, l_1stWon/l_1stIn as 1w_sp, l_2ndWon/(l_svpt - l_df - l_1stIn) as 2w_sp, (w_1stIn - w_1stWon)/w_1stIn as 1w_rp, (w_svpt - w_df - w_1stIn - w_2ndWon)/(w_svpt - w_df - w_1stIn) as 2w_rp, (l_1stWon + l_2ndWon)/l_svpt as t_sp, (w_svpt - w_1stIn - w_2ndWon)/w_svpt as t_rp
+    FROM tennis
+    WHERE loser_name like '%rog%fed%'
+    '''
+
+df_per = pd.read_sql_query(sql = sql_commnd, con=db1)
 
 sql_commnd = '''
-    SELECT *, win_percent * level_weight as wt_win_percent
-    FROM player_wl_tourney
-    WHERE tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
-    ORDER BY player_name, tourney_date
+    SELECT player_name, tourney_date, tourney_id, tourney_name, avg(1w_sp) as avg_1w_sp, avg(t_sp) as avg_t_sp, avg(t_rp) as avg_t_rp
+    FROM (
+        SELECT winner_name as player_name, loser_name as opponent_name, 1 as w_or_l,tourney_date, tourney_id, tourney_name, w_1stIn/w_svpt as 1in_sp, w_1stWon/w_1stIn as 1w_sp, w_2ndWon/(w_svpt - w_df - w_1stIn) as 2w_sp, (l_1stIn - l_1stWon)/l_1stIn as 1w_rp, (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) as 2w_rp, (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
+        FROM tennis
+        WHERE winner_name like '%rog%fed%'
+
+        UNION
+
+        SELECT loser_name as player_name, winner_name as opponent_name, 0 as w_or_l, tourney_date, tourney_id, tourney_name, l_1stIn/l_svpt as 1in_sp, l_1stWon/l_1stIn as 1w_sp, l_2ndWon/(l_svpt - l_df - l_1stIn) as 2w_sp, (w_1stIn - w_1stWon)/w_1stIn as 1w_rp, (w_svpt - w_df - w_1stIn - w_2ndWon)/(w_svpt - w_df - w_1stIn) as 2w_rp, (l_1stWon + l_2ndWon)/l_svpt as t_sp, (w_svpt - w_1stIn - w_2ndWon)/w_svpt as t_rp
+        FROM tennis
+        WHERE loser_name like '%rog%fed%'
+
+    ) as b
+    GROUP BY player_name, tourney_date, tourney_id, tourney_name
     '''
-# WHERE (lower(player_name) like '%raf%nad%' or lower(player_name) like '%rog%fed%') and tourney_date between '2015-01-01 00:00:00' and '2017-12-31 23:59:00' 
-df = pd.read_sql_query(sql = sql_commnd, con=db1)
+
+df_avg_per = pd.read_sql_query(sql = sql_commnd, con=db1)
 
 db1.close()
 
@@ -54,25 +77,27 @@ player_ht ='player_ht'
 player_rank_points = 'player_rank_points'
 
 # this part is calculate the mean on wt_win_percent from current back to some period
-def get_rolling_amount(grp, freq): 
-    return grp.rolling(freq, on=tourney_date)[wt_win_percent].mean()
+def get_rolling_amount(grp, freq, col_mean): 
+    return grp.rolling(freq, on=tourney_date)[col_mean].mean()
 
-df[rolling_score_180] = np.transpose(df.groupby(player_name, as_index = False, group_keys = False).apply(get_rolling_amount, '180D'))
+df_avg_per['avg_t_sp_365'] = np.transpose(df_avg_per.groupby(player_name, as_index = False, group_keys = False).apply(get_rolling_amount, '365D', 'avg_t_sp'))
 
 # this part is scaled the peroid data result
-df[scaled_period_score] = (df[wt_win_percent] - df[wt_win_percent].min())/ (df[wt_win_percent].max() - df[wt_win_percent].min())
-df.fillna(0, inplace=True)
+# df[scaled_period_score] = (df[wt_win_percent] - df[wt_win_percent].min())/ (df[wt_win_percent].max() - df[wt_win_percent].min())
+# df.fillna(0, inplace=True)
+print (df_per.head())
+print (df_avg_per.head())
 
 
 #================= ABOVE IS CONSTRUCT DATAFRAME =====================
 
-nes_col = list([win_percent, player_name, tourney_id, surface, draw_size, level_weight, player_hand, player_age, player_ht, player_rank_points, scaled_period_score])
-cat_cols = list([player_name, tourney_id, surface, player_hand])
-y_col = win_percent
+# nes_col = list([win_percent, player_name, tourney_id, surface, draw_size, level_weight, player_hand, player_age, player_ht, player_rank_points, scaled_period_score])
+# cat_cols = list([player_name, tourney_id, surface, player_hand])
+# y_col = win_percent
 
-# this is to convert all the category into float/ int
-df_short = df[nes_col]
-df_one_hot = pd.get_dummies(df_short, prefix = cat_cols)
+# # this is to convert all the category into float/ int
+# df_short = df[nes_col]
+# df_one_hot = pd.get_dummies(df_short, prefix = cat_cols)
 
 # X, y = df_one_hot.iloc[:, 1:].values, df_one_hot.iloc[:, 0].values
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = .3, stratify = y, random_state = 0)
@@ -83,18 +108,18 @@ df_one_hot = pd.get_dummies(df_short, prefix = cat_cols)
 
 #================= ABOVE IS SPLIT TRAIN/ TEST DATA =====================
 
-pair_cols = [scaled_period_score, player_age, player_ht]
-# sns.pairplot(df_short[pair_cols], size = 2.5)
-# plt.scatter(y = df_short[win_percent], x = df_short[player_hand])
-# plt.tight_layout()
-# plt.savefig('player_hand.png')
-# plt.savefig('pairplt.png')
+# pair_cols = [scaled_period_score, player_age, player_ht]
+# # sns.pairplot(df_short[pair_cols], size = 2.5)
+# # plt.scatter(y = df_short[win_percent], x = df_short[player_hand])
+# # plt.tight_layout()
+# # plt.savefig('player_hand.png')
+# # plt.savefig('pairplt.png')
 
-cm = np.corrcoef(df_short[pair_cols].values.T)
-# sns.set(font_scale = 1.5)
-hm = sns.heatmap(cm, cbar = True, annot = True, square = True, fmt = '.2f', annot_kws = {'size': 15}, yticklabels = pair_cols, xticklabels = pair_cols)
-# hm.set_ylim(0, 10)
-plt.savefig('heatmap.png', bbox_inches='tight')
+# cm = np.corrcoef(df_short[pair_cols].values.T)
+# # sns.set(font_scale = 1.5)
+# hm = sns.heatmap(cm, cbar = True, annot = True, square = True, fmt = '.2f', annot_kws = {'size': 15}, yticklabels = pair_cols, xticklabels = pair_cols)
+# # hm.set_ylim(0, 10)
+# plt.savefig('heatmap.png', bbox_inches='tight')
 
 #================= ABOVE IS TO CHECK PAIRPLOT =====================
 

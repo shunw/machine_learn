@@ -60,10 +60,22 @@ USE tennis_data;
 -- WHERE surface = 'Grass'and winner_name like '%rog%fed%'
 -- ) as c;
 
-SELECT winner_name as player_name, tourney_date, tourney_id, w_1stIn/w_svpt as 1in_sp, w_1stWon/w_1stIn as 1w_sp, w_2ndWon/(w_svpt - w_df - w_1stIn) as 2w_sp, (l_1stIn - l_1stWon)/l_1stIn as 1w_rp, (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) as 2w_rp, (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
+SELECT player_name, tourney_date, tourney_id, tourney_name, avg(1w_sp) as avg_1w_sp, avg(t_sp) as avg_t_sp, avg(t_rp) as avg_t_rp
+FROM (
+SELECT winner_name as player_name, loser_name as opponent_name, 1 as w_or_l,tourney_date, tourney_id, tourney_name, w_1stIn/w_svpt as 1in_sp, w_1stWon/w_1stIn as 1w_sp, w_2ndWon/(w_svpt - w_df - w_1stIn) as 2w_sp, (l_1stIn - l_1stWon)/l_1stIn as 1w_rp, (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) as 2w_rp, (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
 FROM tennis
 WHERE winner_name like '%rog%fed%'
-LIMIT 10;
+
+UNION
+
+SELECT loser_name as player_name, winner_name as opponent_name, 0 as w_or_l, tourney_date, tourney_id, tourney_name, l_1stIn/l_svpt as 1in_sp, l_1stWon/l_1stIn as 1w_sp, l_2ndWon/(l_svpt - l_df - l_1stIn) as 2w_sp, (w_1stIn - w_1stWon)/w_1stIn as 1w_rp, (w_svpt - w_df - w_1stIn - w_2ndWon)/(w_svpt - w_df - w_1stIn) as 2w_rp, (l_1stWon + l_2ndWon)/l_svpt as t_sp, (w_svpt - w_1stIn - w_2ndWon)/w_svpt as t_rp
+FROM tennis
+WHERE loser_name like '%rog%fed%'
+
+) as b
+GROUP BY player_name, tourney_date, tourney_id, tourney_name
+LIMIT 10
+;
 
 
 -- 1in_sp: 一发进球率
