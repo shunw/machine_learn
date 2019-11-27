@@ -63,7 +63,7 @@ df_cal['avg_t_sp_365'] = np.transpose(df_cal.groupby(player_name, as_index = Fal
 
 df_cal_chose = df_cal.loc[(df_cal[player_name] == 'Roger Federer') & (df_cal[opponent_name] == 'Novak Djokovic')]
 
-print (df_cal_chose.head())
+print (df_cal_chose.shape)
 
 
 
