@@ -123,42 +123,42 @@ cursor = db1.cursor()
 #     ''')
 
 
-# # create the table, player vs his opponent in a match with some statistics
-# # currently only Feder data
-# cursor.execute('''
-# CREATE TABLE player_match_stat
-#     SELECT winner_name as player_name, loser_name as opponent_name, 1 as w_or_l,tourney_date, tourney_id, tourney_name, w_1stIn/w_svpt as 1in_sp, 
-#     CASE WHEN w_1stIn = 0 THEN 0
-#     ELSE w_1stWon/w_1stIn END as 1w_sp, 
-#     CASE WHEN w_svpt - w_df - w_1stIn = 0 THEN 0
-#     ELSE w_2ndWon/(w_svpt - w_df - w_1stIn) END as 2w_sp, 
-#     CASE WHEN l_1stIn = 0 THEN 0 
-#     ELSE (l_1stIn - l_1stWon)/l_1stIn END as 1w_rp, 
-#     CASE WHEN l_svpt - l_df - l_1stIn = 0 THEN 0
-#     ELSE (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) END as 2w_rp, 
-#     (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
+# create the table, player vs his opponent in a match with some statistics
+# currently only Feder data
+cursor.execute('''
+CREATE TABLE player_match_stat
+    SELECT winner_name as player_name, loser_name as opponent_name, 1 as w_or_l,tourney_date, tourney_id, tourney_name, w_1stIn/w_svpt as 1in_sp, 
+    CASE WHEN w_1stIn = 0 THEN 0
+    ELSE w_1stWon/w_1stIn END as 1w_sp, 
+    CASE WHEN w_svpt - w_df - w_1stIn = 0 THEN 0
+    ELSE w_2ndWon/(w_svpt - w_df - w_1stIn) END as 2w_sp, 
+    CASE WHEN l_1stIn = 0 THEN 0 
+    ELSE (l_1stIn - l_1stWon)/l_1stIn END as 1w_rp, 
+    CASE WHEN l_svpt - l_df - l_1stIn = 0 THEN 0
+    ELSE (l_svpt - l_df - l_1stIn - l_2ndWon)/(l_svpt - l_df - l_1stIn) END as 2w_rp, 
+    (w_1stWon + w_2ndWon)/w_svpt as t_sp, (l_svpt - l_1stIn - l_2ndWon)/l_svpt as t_rp
 
-#     FROM tennis
+    FROM tennis
 
-#     WHERE ((w_svpt is not NULL) or (l_svpt is not NULL) or w_svpt != 0 or l_svpt != 0) and winner_name like '%rog%fed%'
+    WHERE ((w_svpt is not NULL) or (l_svpt is not NULL) or w_svpt != 0 or l_svpt != 0) and (winner_name like '%rog%fed%' or winner_name like '%nov%djok%')
 
-#     UNION
+    UNION
 
-#     SELECT loser_name as player_name, winner_name as opponent_name, 0 as w_or_l, tourney_date, tourney_id, tourney_name, l_1stIn/l_svpt as 1in_sp, 
-#     CASE WHEN l_1stIn = 0 THEN 0
-#     ELSE l_1stWon/l_1stIn END as 1w_sp, 
-#     CASE WHEN l_svpt - l_df - l_1stIn = 0 THEN 0 
-#     ELSE l_2ndWon/(l_svpt - l_df - l_1stIn) END as 2w_sp, 
-#     CASE WHEN w_1stIn = 0 THEN 0
-#     ELSE (w_1stIn - w_1stWon)/w_1stIn END as 1w_rp, 
-#     CASE WHEN w_svpt - w_df - w_1stIn = 0 THEN 0
-#     ELSE (w_svpt - w_df - w_1stIn - w_2ndWon)/(w_svpt - w_df - w_1stIn) END as 2w_rp, 
-#     (l_1stWon + l_2ndWon)/l_svpt as t_sp, (w_svpt - w_1stIn - w_2ndWon)/w_svpt as t_rp
-#     FROM tennis
+    SELECT loser_name as player_name, winner_name as opponent_name, 0 as w_or_l, tourney_date, tourney_id, tourney_name, l_1stIn/l_svpt as 1in_sp, 
+    CASE WHEN l_1stIn = 0 THEN 0
+    ELSE l_1stWon/l_1stIn END as 1w_sp, 
+    CASE WHEN l_svpt - l_df - l_1stIn = 0 THEN 0 
+    ELSE l_2ndWon/(l_svpt - l_df - l_1stIn) END as 2w_sp, 
+    CASE WHEN w_1stIn = 0 THEN 0
+    ELSE (w_1stIn - w_1stWon)/w_1stIn END as 1w_rp, 
+    CASE WHEN w_svpt - w_df - w_1stIn = 0 THEN 0
+    ELSE (w_svpt - w_df - w_1stIn - w_2ndWon)/(w_svpt - w_df - w_1stIn) END as 2w_rp, 
+    (l_1stWon + l_2ndWon)/l_svpt as t_sp, (w_svpt - w_1stIn - w_2ndWon)/w_svpt as t_rp
+    FROM tennis
 
-#     WHERE ((l_svpt is not NULL) or (w_svpt is not NULL) or w_svpt != 0 or l_svpt != 0) and loser_name like '%rog%fed%'
-#     ;
-#     ''')
+    WHERE ((l_svpt is not NULL) or (w_svpt is not NULL) or w_svpt != 0 or l_svpt != 0) and (loser_name like '%rog%fed%' or loser_name like '%nov%djok%')
+    ;
+    ''')
 
 # create the table, to calculate the player_match_stat avg data for each player
 # currently only Feder data
