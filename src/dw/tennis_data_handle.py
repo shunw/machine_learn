@@ -27,6 +27,7 @@ sql_commnd = '''
     FROM player_match_stat as p
     LEFT JOIN player_match_stat_cal as pcal
     ON p.player_name = pcal.player_name and p.tourney_id = pcal.tourney_id
+    ORDER BY tourney_date
 
     '''
 
@@ -55,17 +56,29 @@ player_age = 'player_age'
 player_ht ='player_ht'
 player_rank_points = 'player_rank_points'
 
+w1_sp_comp = '1w_sp_comp'
+w1_sp = '1w_sp'
+avg_1w_sp = 'avg_1w_sp'
+
+t_sp_comp = 't_sp_comp'
+t_sp = 't_sp'
+avg_t_sp = 'avg_t_sp'
+
+t_rp_comp = 't_rp_comp'
+t_rp = 't_rp'
+avg_t_rp = 'avg_t_rp'
+
 # this part is calculate the mean on wt_win_percent from current back to some period
 def get_rolling_amount(grp, freq, col_mean): 
     return grp.rolling(freq, on=tourney_date)[col_mean].mean()
 
 df_cal['avg_t_sp_365'] = np.transpose(df_cal.groupby(player_name, as_index = False, group_keys = False).apply(get_rolling_amount, '365D', 'avg_t_sp'))
 
-df_cal_chose = df_cal.loc[(df_cal[player_name] == 'Roger Federer') & (df_cal[opponent_name] == 'Novak Djokovic')]
+df_cal_chose = df_cal.loc[(df_cal[player_name] == 'Roger Federer') & (df_cal[opponent_name] == 'Novak Djokovic')].copy()
 
-print (df_cal_chose.shape)
-
-
+df_cal_chose[w1_sp_comp] = df_cal_chose[w1_sp] - df_cal_chose[avg_1w_sp]
+df_cal_chose[t_sp_comp] = df_cal_chose[t_sp] - df_cal_chose[avg_t_sp]
+df_cal_chose[t_rp_comp] = df_cal_chose[t_rp] - df_cal_chose[avg_t_rp]
 
 #================= ABOVE IS CONSTRUCT DATAFRAME =====================
 
