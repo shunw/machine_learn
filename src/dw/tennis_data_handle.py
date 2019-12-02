@@ -85,6 +85,10 @@ df_cal_chose[w1_sp_comp] = df_cal_chose[w1_sp] - df_cal_chose[avg_1w_sp]
 df_cal_chose[t_sp_comp] = df_cal_chose[t_sp] - df_cal_chose[avg_t_sp]
 df_cal_chose[t_rp_comp] = df_cal_chose[t_rp] - df_cal_chose[avg_t_rp]
 # print (df_cal_chose.shape)
+df_cal_chose.to_csv('df_cal_chose.csv', index= False)
+# grouped = df_cal_chose.groupby(tourney_id).size()
+# print (grouped)
+# print (grouped.shape)
 
 # ================= ABOVE IS CONSTRUCT DATAFRAME =====================
 
@@ -151,13 +155,19 @@ df_cal_chose[t_rp_comp] = df_cal_chose[t_rp] - df_cal_chose[avg_t_rp]
 
 # ================= ABOVE IS PCA PART =====================
 
-# this is to make the scatter plot to check the relationship
-fig, axes = plt.subplots(1, 1)
+# # this is to make the scatter plot to check the relationship
+# fig, axes = plt.subplots(1, 1)
 
-ax1 = df_cal_chose.loc[df_cal_chose[w_or_l] == 0, :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'DarkBlue', style = '.', alpha = .5)
+# ax1 = df_cal_chose.loc[(df_cal_chose[w_or_l] == 0) & (df_cal_chose[player_name] == 'Roger Federer'), :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'DarkBlue', style = 'x', alpha = .5)
 
-ax2 = df_cal_chose.loc[df_cal_chose[w_or_l] == 1, :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'Red', style = '.', alpha = .5, ax = ax1)
+# ax2 = df_cal_chose.loc[(df_cal_chose[w_or_l] == 1) & (df_cal_chose[player_name] == 'Roger Federer'), :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'DarkBlue', style = '.', alpha = .5, ax = ax1)
 
-plt.savefig('pic_output.png')
+# ax3 = df_cal_chose.loc[(df_cal_chose[w_or_l] == 0) & (df_cal_chose[player_name] == 'Novak Djokovic'), :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'red', style = 'x', alpha = .5, ax = ax2)
+
+# ax4 = df_cal_chose.loc[(df_cal_chose[w_or_l] == 1) & (df_cal_chose[player_name] == 'Novak Djokovic'), :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'red', style = '.', alpha = .5, ax = ax3)
+
+# # ax2 = df_cal_chose.loc[df_cal_chose[w_or_l] == 1, :].plot(x = 'tourney_date', y = avg_t_sp_365, c = 'Red', style = '.', alpha = .5, ax = ax1)
+
+# plt.savefig('pic_output.png')
 
 # ================= ABOVE IS PLOT CHECK PART =====================
